@@ -21,7 +21,7 @@ public class Game {
 
         if (!player.hasFolded()) {
 
-            System.out.println(player.getName() + " you have " + player.getTokens() + "\nDo you want to see your cards ? (Y/N)");
+            System.out.println(player.getName() + " you have " + player.getTokens() + " tokens.\nDo you want to see your cards ? (Y/N)");
             String choice = inputScanner.nextLine();
 
             if (choice.equalsIgnoreCase("Y")) {
@@ -32,22 +32,35 @@ public class Game {
 
             System.out.println("What do you want to do ? \n1 : Fold\n2 : Call\n3 : Raise");
 
-            int bet = inputScanner.nextInt();
-            while (bet < 1 || bet > 3) {
-                bet = inputScanner.nextInt();
+            int playerChoice = inputScanner.nextInt();
+            while (playerChoice < 1 || playerChoice > 3) {
+                playerChoice = inputScanner.nextInt();
                 System.out.println("Not a valid choise, please try again");
             }
             inputScanner.nextLine();
-            switch (bet) {
+            switch (playerChoice) {
+
                 case 1 -> {
                     player.setFolded(true);
                     System.out.println(player.getName() + " fold\n");
                 }
                 case 2 -> {
-                    System.out.println("call\n");
+                    System.out.println(player.getName() + "call\n");
                 }
                 case 3 -> {
-                    System.out.println("raise\n");
+                    System.out.println("How much do you want to bet ?");
+                    int bet = inputScanner.nextInt();
+                    while (bet > player.getTokens() || bet < 1) {
+                        if (bet > player.getTokens()) {
+                            System.out.println("Not enough tokens, you have " + player.getTokens() + " tokens left");
+                        } else {
+                            System.out.println("You need to bet 1 or more token(s)");
+                        }
+                        bet = inputScanner.nextInt();
+                    }
+                    inputScanner.nextLine();
+                    player.betTokens(bet);
+                    System.out.println(player.getName() + " raise to " + bet + " tokens\n");
                 }
             }
         } else {
@@ -115,10 +128,6 @@ public class Game {
 
         for (Player player : players) {
             game.playersTurn(player, inputScanner);
-        }
-        
-        for (Player player : players) {
-            player.getHand();
         }
     }
 }

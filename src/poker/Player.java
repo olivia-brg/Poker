@@ -7,7 +7,7 @@ public class Player {
 
     private final String name;
     private final List<Card> hand;
-    private final int tokens;
+    private int tokens;
     private boolean Folded = false;
 
     public Player (String name) {
@@ -26,6 +26,10 @@ public class Player {
 
     public int getTokens() {
         return tokens;
+    }
+
+    public void betTokens(int bet) {
+        this.tokens = tokens - bet;
     }
 
     public String getName() {
