@@ -19,15 +19,17 @@ public class Deck {
         Collections.shuffle(deck);
     }
 
-    public static List<Card> Deal(int number) {
+    public static List<Card> Deal(int numberOfCards) {
         List<Card> draw = new ArrayList<>();
 
-        if (deck.size() < number) {
+        if (deck.size() <= numberOfCards) {
+            System.out.println("Not enough cards");
             return null;
         }
-        for (int i = 0; i < number; i++) {
-            draw.add(deck.get(0));
+        
+        for (int i = 0; i < numberOfCards; i++) {
             deck.remove(0);
+            draw.add(deck.get(0));
         }
         return draw;
     }

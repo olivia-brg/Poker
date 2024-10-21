@@ -2,8 +2,8 @@ package poker;
 
 public class Card {
 
-    enum Value { DEUX, TROIS, QUATRE, CINQ, SIX, SEPT, HUIT, NEUF, DIX, VALET, DAME, ROI, AS }
-    enum Color { PIQUE, TREFLE, COEUR, CARREAU }
+    enum Value { TWO, THREE, FOUR, FIVE, SIX, SEVEN, HEIGHT, NINE, TEN, JACK, QUEEN, KING, ACE }
+    enum Color { SPADE, CLUB, HEART, DIAMOND }
 
     private final Color color;
     private final Value value;
@@ -13,16 +13,8 @@ public class Card {
         this.value = value;
     }
 
-    public Value getValue() {
-        return value;
-    }
-
-    public Color getColor() {
-        return color;
-    }
-
     @Override
     public String toString() {
-        return value + " " + color;
+        return value + " of " + color;
     }
 }
