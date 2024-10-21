@@ -8,8 +8,8 @@ public class Game {
 
     private final List<Player> players;
     private final Deck deck;
-    private List<Card> communityCards;
-    private List<Player> foldedPlayers;
+    private final List<Card> communityCards;
+    private int higherBet;
 
     public Game(List<Player> players) {
         this.players = players;
@@ -22,7 +22,7 @@ public class Game {
     }
 
     public void printCommunityCards() {
-        System.out.println("Community Cards:");
+        System.out.println("Community Cards :");
         for (Card card : communityCards) {
             System.out.println(card);
         }
@@ -54,36 +54,41 @@ public class Game {
         Game game = new Game(players);
 
         for (Player player : players) {
-            System.out.println("Do you want to see your cards " + player.getName() + " ? (Y/N)");
-            String choice = inputScanner.nextLine();
+            if (player.hasFolded()) {
 
-            if (choice.equalsIgnoreCase("Y")) {
-                System.out.println("Your cards are: " + player.getHand() + "\n");
-            } else {
-                System.out.println(player.getName() + " chose not to see their cards." + "\n");
-            }
+                System.out.println(player.getName() + " you have " + player.getTokens() + "\nDo you want to see your cards ? (Y/N)");
+                String choice = inputScanner.nextLine();
 
-            System.out.println("What do you want to do ? \n1 : Fold\n2 : Call\n3 : Raise");
-
-            int bet = inputScanner.nextInt();
-            while (bet < 1 || bet > 3) {
-                bet = inputScanner.nextInt();
-                System.out.println("Not a valid choise, please try again");
-            }
-            inputScanner.nextLine();
-            switch (bet) {
-                case 1 -> {
-                    System.out.println("fold");
+                if (choice.equalsIgnoreCase("Y")) {
+                    System.out.println("Your cards are : " + player.getHand() + "\n");
+                } else {
+                    System.out.println(player.getName() + " chose not to see their cards." + "\n");
                 }
-                case 2 -> {
-                    System.out.println("call");
+
+                System.out.println("What do you want to do ? \n1 : Fold\n2 : Call\n3 : Raise");
+
+                int bet = inputScanner.nextInt();
+                while (bet < 1 || bet > 3) {
+                    bet = inputScanner.nextInt();
+                    System.out.println("Not a valid choise, please try again");
                 }
-                case 3 -> {
-                    System.out.println("raise");
+                inputScanner.nextLine();
+                switch (bet) {
+                    case 1 -> {
+                        player.setFolded(true);
+                        System.out.println(player.getName() + " has folded\n");
+                    }
+                    case 2 -> {
+                        System.out.println("call\n");
+                    }
+                    case 3 -> {
+                        System.out.println("raise\n");
+                    }
                 }
             }
 
         }
+        System.out.println(game.players);
         game.drawCommunityCards(3);
 
         game.drawCommunityCards(1);
@@ -92,4 +97,5 @@ public class Game {
         game.printCommunityCards();
 
     }
+
 }

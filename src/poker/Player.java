@@ -8,6 +8,7 @@ public class Player {
     private final String name;
     private final List<Card> hand;
     private final int tokens;
+    private boolean Folded = false;
 
     public Player (String name) {
         this.name = name;
@@ -23,12 +24,24 @@ public class Player {
         this.hand.addAll(card);
     }
 
+    public int getTokens() {
+        return tokens;
+    }
+
     public String getName() {
         return name;
     }
 
+    public boolean hasFolded() {
+        return Folded;
+    }
+    
+    public void setFolded(boolean Folded) {
+        this.Folded = Folded;
+    }
+
     @Override
     public String toString() {
-        return name + " : " + hand + "\nHas " + tokens + " tokens";
+        return name + " : " + hand + " and has " + tokens + " tokens\n";
     }
 }
