@@ -7,13 +7,12 @@ import java.util.Scanner;
 public class Game {
 
     private final List<Player> players;
-    private final Deck deck;
     private final List<Card> communityCards;
-    private int higherBet;
+    // private int currentBet;
+    private int dealerIndex;
 
     public Game(List<Player> players) {
         this.players = players;
-        this.deck = new Deck();
         this.communityCards = new ArrayList<>();
     }
 
@@ -21,50 +20,66 @@ public class Game {
 
         if (!player.hasFolded()) {
 
-            System.out.println(player.getName() + " you have " + player.getTokens() + " tokens.\nDo you want to see your cards ? (Y/N)");
+            System.out.println("\n" + player.getName() + " you have " + player.getTokens() + " tokens.\nDo you want to see your cards ? (Y for yes)");
             String choice = inputScanner.nextLine();
 
             if (choice.equalsIgnoreCase("Y")) {
-                System.out.println("Your cards are : " + player.getHand() + "\n");
-            } else {
-                System.out.println(player.getName() + " chose not to see their cards." + "\n");
+                System.out.println("\nYour cards are : " + player.getHand());
             }
 
-            System.out.println("What do you want to do ? \n1 : Fold\n2 : Call\n3 : Raise");
+            System.out.println("\nWhat do you want to do ? \n1 : Fold\n2 : Call\n3 : Raise");
 
-            int playerChoice = inputScanner.nextInt();
+            int playerChoice = 0;
             while (playerChoice < 1 || playerChoice > 3) {
-                playerChoice = inputScanner.nextInt();
-                System.out.println("Not a valid choise, please try again");
+                do {
+                    try {
+                        String s = inputScanner.nextLine();
+                        playerChoice = Integer.parseInt(s);
+                        break;
+                    } catch (NumberFormatException e) {
+                        System.out.println("\nPlease select a number between 1 and 3.");
+                    }
+
+                } while (true);
             }
-            inputScanner.nextLine();
+
             switch (playerChoice) {
 
                 case 1 -> {
                     player.setFolded(true);
-                    System.out.println(player.getName() + " fold\n");
+                    System.out.println("\n" + player.getName() + " fold");
                 }
                 case 2 -> {
-                    System.out.println(player.getName() + "call\n");
+                    System.out.println("\n" + player.getName() + " call");
                 }
                 case 3 -> {
-                    System.out.println("How much do you want to bet ?");
-                    int bet = inputScanner.nextInt();
-                    while (bet > player.getTokens() || bet < 1) {
+                    System.out.println("\nYou have " + player.getTokens() + " tokens. How much do you want to bet ?");
+
+                    int bet = 0;
+                    while (bet < 1 || bet > player.getTokens()) {
+                        do {
+                            try {
+                                String s = inputScanner.nextLine();
+                                bet = Integer.parseInt(s);
+                                break;
+                            } catch (NumberFormatException e) {
+                                System.out.println("\nCounldn't parse input, please select a number.");
+                            }
+
+                        } while (true);
+
                         if (bet > player.getTokens()) {
-                            System.out.println("Not enough tokens, you have " + player.getTokens() + " tokens left");
-                        } else {
-                            System.out.println("You need to bet 1 or more token(s)");
+                            System.out.println("\nNot enough tokens, you have " + player.getTokens() + " tokens left");
+                        } else if (bet < 1) {
+                            System.out.println("\nYou need to bet 1 or more token(s)");
                         }
-                        bet = inputScanner.nextInt();
                     }
-                    inputScanner.nextLine();
                     player.betTokens(bet);
-                    System.out.println(player.getName() + " raise to " + bet + " tokens\n");
+                    System.out.println("\n" + player.getName() + " raise by " + bet + " tokens");
                 }
             }
         } else {
-            System.out.println(player.getName() + " has folded !");
+            System.out.println("\n" + player.getName() + " has folded.");
         }
     }
 
@@ -77,57 +92,96 @@ public class Game {
         for (Card card : communityCards) {
             System.out.println(card);
         }
-        System.out.println("\n");
+    }
+
+    public void nextDealer() {
+        dealerIndex = (dealerIndex + 1) % players.size();
+        System.out.println(players.get(dealerIndex).getName() + " is the dealer");
+    }
+
+    public Player getDealer() {
+        return players.get(dealerIndex);
+    }
+
+    public void playRound(Scanner inputScanner) {
+        int currentPlayerIndex = (dealerIndex + 1) % players.size();
+
+        for (int i = 0; i < players.size(); i++) {
+            Player currentPlayer = players.get(currentPlayerIndex);
+            playersTurn(currentPlayer, inputScanner);
+
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+        }
     }
 
     public static void main(String[] args) {
-        List<Player> players = new ArrayList<>();
-
-        int numberOfPlayers = Integer.parseInt(args[0]);
-
         Scanner inputScanner = new Scanner(System.in);
 
+        List<Player> players = new ArrayList<>();
+
+        int numberOfPlayers;
+
+        System.out.println("\nHow many player there is ?");
+        do {
+            try {
+                String s = inputScanner.nextLine();
+                numberOfPlayers = Integer.parseInt(s);
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("\nCouldn't parse input, please try again");
+            }
+
+        } while (true);
+
         for (int i = 0; i < numberOfPlayers; i++) {
-            System.out.println("Enter username:");
+            System.out.println("\nEnter username:");
 
             String userName = inputScanner.nextLine();
-            System.out.println("Username is: " + userName + "\n");
+            System.out.println("Hello " + userName + " !");
 
             Player player = new Player(userName);
             players.add(player);
         }
 
-        Deck.CreateDeck();
-
-        for (Player player : players) {
-            player.setHand(Deck.Deal(2));
-        }
+        int gameNumber = 0;
+        String playAgain;
 
         Game game = new Game(players);
 
-        for (Player player : players) {
-            game.playersTurn(player, inputScanner);
-        }
+        do {
+            gameNumber++;
 
-        game.drawCommunityCards(3);
-        game.printCommunityCards();
+            System.out.println("\nGame n°" + gameNumber + "");
 
-        for (Player player : players) {
-            game.playersTurn(player, inputScanner);
-        }
+            System.out.println("Dealer: " + game.getDealer().getName());
 
-        game.drawCommunityCards(1);
-        game.printCommunityCards();
+            Deck.CreateDeck();
 
-        for (Player player : players) {
-            game.playersTurn(player, inputScanner);
-        }
+            for (Player player : players) {
+                player.setFolded(false);
+                player.setHand(Deck.Deal(2));
+            }
 
-        game.drawCommunityCards(1);
-        game.printCommunityCards();
+            for (int round = 0; round < 3; round++) {
 
-        for (Player player : players) {
-            game.playersTurn(player, inputScanner);
-        }
+                System.out.println("\nDealer: " + game.getDealer().getName());
+
+                game.playRound(inputScanner);
+
+                if (round == 0) {
+                    game.drawCommunityCards(3); // Flop
+                } else {
+                    game.drawCommunityCards(1); // Turn et River
+                }
+                game.printCommunityCards();
+
+            }
+            game.playRound(inputScanner);
+
+
+            System.out.println("\n\nPlay again ? (Y for yes)");
+            playAgain = inputScanner.nextLine();
+
+        } while (playAgain.equalsIgnoreCase("Y"));
     }
 }

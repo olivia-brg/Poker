@@ -21,6 +21,7 @@ public class Player {
     }
 
     public void setHand(List<Card> card) {
+        this.hand.clear();
         this.hand.addAll(card);
     }
 
