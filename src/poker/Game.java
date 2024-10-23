@@ -1,21 +1,25 @@
 package poker;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class Game {
 
     private final List<Player> players;
     private final List<Card> communityCards;
-    private int smallBlind = 2;
-    private int currentMinBet = this.smallBlind * 2;
+    private int smallBlind;
+    private int currentMinBet;
     private int dealerIndex;
     private int totalBetTokens;
 
     public Game(List<Player> players) {
         this.players = players;
         this.communityCards = new ArrayList<>();
+        this.smallBlind = 2;
+        this.currentMinBet = this.smallBlind * 2;
     }
 
     public void playersTurn(Player player, Scanner inputScanner) {
@@ -95,7 +99,7 @@ public class Game {
     }
 
     public void getCommunityCards() {
-        System.out.println("\nCommunity Cards :");
+        System.out.println("\nCommunity Cards :\n");
         for (Card card : communityCards) {
             System.out.println(card);
         }
@@ -123,9 +127,7 @@ public class Game {
 
     public static void main(String[] args) {
         Scanner inputScanner = new Scanner(System.in);
-
         List<Player> players = new ArrayList<>();
-
         int numberOfPlayers;
 
         System.out.println("\nHow many player there is ?");
@@ -181,7 +183,25 @@ public class Game {
 
             for (int round = 0; round < 3; round++) {
 
-                game.playRound(inputScanner);
+                boolean newTurn;
+                do {
+                    game.playRound(inputScanner);
+
+                    LinkedList<Integer> playersActualBet = new LinkedList<>();
+                    for (Player player : players) {
+                        playersActualBet.push(player.getActualBet());
+                    }
+
+
+                    newTurn = false; 
+                    for (int i = 1; i < numberOfPlayers; i++) {
+                        if (!Objects.equals(playersActualBet.get(0), playersActualBet.get(i))) {
+                            newTurn = true;
+                            break;
+                        }
+                    }
+
+                } while (newTurn);
 
                 if (round == 0) {
                     game.setCommunityCards(3); // Flop
@@ -202,9 +222,8 @@ public class Game {
 
 
 /*
- * what happens when you don't have token anymore and you can't call or bet?
- * 
- * 
- * 
- * 
+ * TODO
+ * what happens when you don't have tokens anymore and you can't call or bet?
+ * winner implementation
+ * next game logic (reset var / change dealer and blinds...)
  */
