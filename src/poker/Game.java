@@ -8,8 +8,10 @@ public class Game {
 
     private final List<Player> players;
     private final List<Card> communityCards;
-    // private int currentBet;
+    private int smallBlind = 2;
+    private int currentMinBet = this.smallBlind * 2;
     private int dealerIndex;
+    private int totalBetTokens;
 
     public Game(List<Player> players) {
         this.players = players;
@@ -20,7 +22,7 @@ public class Game {
 
         if (!player.hasFolded()) {
 
-            System.out.println("\n" + player.getName() + " you have " + player.getTokens() + " tokens.\nDo you want to see your cards ? (Y for yes)");
+            System.out.println("\n" + player.getName() + " : you have " + player.getTokens() + " tokens.\nDo you want to see your cards ? (Y for yes)");
             String choice = inputScanner.nextLine();
 
             if (choice.equalsIgnoreCase("Y")) {
@@ -50,44 +52,49 @@ public class Game {
                     System.out.println("\n" + player.getName() + " fold");
                 }
                 case 2 -> {
-                    System.out.println("\n" + player.getName() + " call");
+                    int call = (currentMinBet - player.getActualBet());
+                    player.betTokens(call);
+                    totalBetTokens += call;
+
+                    System.out.println("\n" + player.getName() + " call\nTotal : " + player.getActualBet());
                 }
                 case 3 -> {
-                    System.out.println("\nYou have " + player.getTokens() + " tokens. How much do you want to bet ?");
+                    System.out.println("\nYou have " + player.getTokens() + " tokens.\nCurrent bet is at " + currentMinBet + "\nHow much more do you want to bet ?");
 
-                    int bet = 0;
-                    while (bet < 1 || bet > player.getTokens()) {
-                        do {
-                            try {
-                                String s = inputScanner.nextLine();
-                                bet = Integer.parseInt(s);
-                                break;
-                            } catch (NumberFormatException e) {
-                                System.out.println("\nCounldn't parse input, please select a number.");
-                            }
+                    int addToBet = 0;
 
-                        } while (true);
-
-                        if (bet > player.getTokens()) {
-                            System.out.println("\nNot enough tokens, you have " + player.getTokens() + " tokens left");
-                        } else if (bet < 1) {
-                            System.out.println("\nYou need to bet 1 or more token(s)");
+                    do {
+                        try {
+                            String s = inputScanner.nextLine();
+                            addToBet = Integer.parseInt(s);
+                            break;
+                        } catch (NumberFormatException e) {
+                            System.out.println("\nCounldn't parse input, please select a number.");
                         }
-                    }
+
+                    } while (true);
+
+                    int bet = addToBet + (currentMinBet - player.getActualBet());
+
                     player.betTokens(bet);
-                    System.out.println("\n" + player.getName() + " raise by " + bet + " tokens");
+                    totalBetTokens += bet;
+                    if (currentMinBet < player.getActualBet()) {
+                        currentMinBet = player.getActualBet();
+                    }
+                    System.out.println("\n" + player.getName() + " raise by " + addToBet + " tokens\nTotal : " + player.getActualBet());
                 }
             }
+            System.out.println("\nTotal bet tokens : " + totalBetTokens);
         } else {
             System.out.println("\n" + player.getName() + " has folded.");
         }
     }
 
-    public void drawCommunityCards(int numberOfCards) {
+    public void setCommunityCards(int numberOfCards) {
         communityCards.addAll(Deck.Deal(numberOfCards));
     }
 
-    public void printCommunityCards() {
+    public void getCommunityCards() {
         System.out.println("\nCommunity Cards :");
         for (Card card : communityCards) {
             System.out.println(card);
@@ -96,15 +103,15 @@ public class Game {
 
     public void nextDealer() {
         dealerIndex = (dealerIndex + 1) % players.size();
-        System.out.println(players.get(dealerIndex).getName() + " is the dealer");
     }
 
-    public Player getDealer() {
-        return players.get(dealerIndex);
+    public Player getDealer(Integer... nth) {
+        Integer n1 = nth.length > 0 ? nth[0] : 0;
+        return players.get(dealerIndex + n1);
     }
 
     public void playRound(Scanner inputScanner) {
-        int currentPlayerIndex = (dealerIndex + 1) % players.size();
+        int currentPlayerIndex = (dealerIndex + 3) % players.size();
 
         for (int i = 0; i < players.size(); i++) {
             Player currentPlayer = players.get(currentPlayerIndex);
@@ -151,9 +158,8 @@ public class Game {
         do {
             gameNumber++;
 
-            System.out.println("\nGame n°" + gameNumber + "");
-
-            System.out.println("Dealer: " + game.getDealer().getName());
+            System.out.println("\nGame n°" + gameNumber);
+            System.out.println("Dealer : " + game.getDealer().getName());
 
             Deck.CreateDeck();
 
@@ -162,22 +168,30 @@ public class Game {
                 player.setHand(Deck.Deal(2));
             }
 
-            for (int round = 0; round < 3; round++) {
+            Player smallBlindPlayer = game.getDealer(1);
+            Player bigBlindPlayer = game.getDealer(2);
 
-                System.out.println("\nDealer: " + game.getDealer().getName());
+            smallBlindPlayer.betTokens(game.smallBlind);
+            bigBlindPlayer.betTokens(game.smallBlind * 2);
+
+            game.totalBetTokens += game.smallBlind * 3;
+
+            System.out.println(smallBlindPlayer.getName() + " is the small blind (" + game.smallBlind + " tokens)");
+            System.out.println(bigBlindPlayer.getName() + " is the big blind (" + (game.smallBlind * 2) + " tokens)");
+
+            for (int round = 0; round < 3; round++) {
 
                 game.playRound(inputScanner);
 
                 if (round == 0) {
-                    game.drawCommunityCards(3); // Flop
+                    game.setCommunityCards(3); // Flop
                 } else {
-                    game.drawCommunityCards(1); // Turn et River
+                    game.setCommunityCards(1); // Turn & River
                 }
-                game.printCommunityCards();
+                game.getCommunityCards();
 
             }
             game.playRound(inputScanner);
-
 
             System.out.println("\n\nPlay again ? (Y for yes)");
             playAgain = inputScanner.nextLine();
@@ -185,3 +199,12 @@ public class Game {
         } while (playAgain.equalsIgnoreCase("Y"));
     }
 }
+
+
+/*
+ * what happens when you don't have token anymore and you can't call or bet?
+ * 
+ * 
+ * 
+ * 
+ */

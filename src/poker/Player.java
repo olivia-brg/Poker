@@ -9,6 +9,7 @@ public class Player {
     private final List<Card> hand;
     private int tokens;
     private boolean Folded = false;
+    private int actualBet;
 
     public Player (String name) {
         this.name = name;
@@ -31,6 +32,7 @@ public class Player {
 
     public void betTokens(int bet) {
         this.tokens = tokens - bet;
+        this.actualBet += bet;
     }
 
     public String getName() {
@@ -43,6 +45,14 @@ public class Player {
     
     public void setFolded(boolean Folded) {
         this.Folded = Folded;
+    }
+
+    public int getActualBet() {
+        return actualBet;
+    }
+    
+    public void resetActualBet() {
+        this.actualBet = 0;
     }
 
     @Override
