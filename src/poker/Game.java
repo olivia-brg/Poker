@@ -159,45 +159,51 @@ public class Game {
 
         do {
             gameNumber++;
-
+            
             System.out.println("\nGame n°" + gameNumber);
             System.out.println("Dealer : " + game.getDealer().getName());
-
+            
             Deck.CreateDeck();
-
+            
             for (Player player : players) {
                 player.setFolded(false);
                 player.setHand(Deck.Deal(2));
             }
-
+            
             Player smallBlindPlayer = game.getDealer(1);
             Player bigBlindPlayer = game.getDealer(2);
-
+            
             smallBlindPlayer.betTokens(game.smallBlind);
             bigBlindPlayer.betTokens(game.smallBlind * 2);
-
+            
             game.totalBetTokens += game.smallBlind * 3;
-
+            
             System.out.println(smallBlindPlayer.getName() + " is the small blind (" + game.smallBlind + " tokens)");
             System.out.println(bigBlindPlayer.getName() + " is the big blind (" + (game.smallBlind * 2) + " tokens)");
-
+            
             for (int round = 0; round < 3; round++) {
+                int playersInGame = 0;
 
                 boolean newTurn;
                 do {
                     game.playRound(inputScanner);
 
                     LinkedList<Integer> playersActualBet = new LinkedList<>();
+                    LinkedList<Boolean> playersStillPlaying = new LinkedList<>();
                     for (Player player : players) {
                         playersActualBet.push(player.getActualBet());
+                        playersStillPlaying.push(player.hasFolded());
                     }
-
 
                     newTurn = false; 
                     for (int i = 1; i < numberOfPlayers; i++) {
                         if (!Objects.equals(playersActualBet.get(0), playersActualBet.get(i))) {
                             newTurn = true;
                             break;
+                        }
+                        
+                        if (playersStillPlaying.get(i) == true) {
+                            playersInGame++;
                         }
                     }
 
@@ -226,4 +232,5 @@ public class Game {
  * what happens when you don't have tokens anymore and you can't call or bet?
  * winner implementation
  * next game logic (reset var / change dealer and blinds...)
+ * QUIT WHEN THERE'S JUST ONE PLAYER
  */
