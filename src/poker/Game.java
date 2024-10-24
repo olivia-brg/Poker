@@ -24,7 +24,7 @@ public class Game {
 
         if (!player.hasFolded()) {
 
-            System.out.println("\n\n--------- " + player.getName() + "'s turn ---------\n\nYou have " + player.getTokens() + " tokens and current bet is at " + currentMinBet + " tokens.\n\nDo you want to see your cards ? (Y for yes / Enter for no)");
+            System.out.println("\n\n-------- " + player.getName() + "'s turn --------\n\nYou have " + player.getTokens() + " tokens and current bet is at " + currentMinBet + " tokens.\n\nDo you want to see your cards ? (Y for yes / Enter for no)");
             String choice = inputScanner.nextLine();
 
             if (choice.equalsIgnoreCase("Y")) {
@@ -103,13 +103,9 @@ public class Game {
         }
     }
 
-    public void nextDealer() {
-        dealerIndex = (dealerIndex + 1) % players.size();
-    }
-
     public Player getDealer(Integer... nth) {
         Integer n = nth.length > 0 ? nth[0] : 0;
-        return players.get(dealerIndex + n);
+        return players.get((dealerIndex + n )% players.size());
     }
 
     public void playRound(Scanner inputScanner) {
@@ -129,12 +125,13 @@ public class Game {
         List<Player> players = new ArrayList<>();
         int numberOfPlayers;
 
-        System.out.println("\nHow many player there is ?");
+        System.out.println("\u001B[30m" + "\u001B[47m" + "\nHow many player there is ?");
         do {
             try {
                 String s = inputScanner.nextLine();
                 numberOfPlayers = Integer.parseInt(s);
-                break;
+                if (numberOfPlayers >= 3) break;
+                System.out.println("\nYou need to be 3 or more players, please try again");
             } catch (NumberFormatException e) {
                 System.out.println("\nCouldn't parse input, please try again");
             }
@@ -156,9 +153,10 @@ public class Game {
         do {
             Game game = new Game(players, numberOfPlayers);
             
+            game.dealerIndex += gameNumber;
             gameNumber++;
 
-            System.out.println("\n------------- Game n°" + gameNumber + " -------------\n\n" +
+            System.out.println("\n------------------------------------\n------------- Game n°" + gameNumber + " -------------\n------------------------------------\n\n" +
                                 "Dealer : " + game.getDealer().getName());
 
             Deck.CreateDeck();
@@ -216,10 +214,26 @@ public class Game {
                 }
 
             }
+
             game.playRound(inputScanner);
 
+            players.toString();
+            
+
             winner.earnedTokens(game.totalBetTokens);
-            System.out.println("-_-_-_-_-_- Well played " + winner.getName() + ", you won " + (game.totalBetTokens - winner.getActualBet()) + " tokens, now you have " + winner.getTokens() + " ! -_-_-_-_-_-");
+            System.out.println("\n-_-_-_-_-_- Well played " + winner.getName() + ", you won " + (game.totalBetTokens - winner.getActualBet()) + " tokens ! -_-_-_-_-_-");
+
+            LinkedList<Player> playersRanking = new LinkedList<>();
+            for (Player player : players) {
+                playersRanking.push(player);
+            }
+
+            playersRanking.sort(Comparator.comparingInt(Player::getTokens).reversed());
+            System.out.println("\nPlayers ranking :\n");
+
+            for (int i = 0; i < playersRanking.size(); i++) {
+                System.out.println((i+1) + " : " + playersRanking.get(i).toString());
+            }            
 
             System.out.println("\n\nPlay again ? (Y for yes)");
             playAgain = inputScanner.nextLine();
@@ -233,5 +247,5 @@ public class Game {
  * TODO
  * what happens when you don't have tokens anymore and you can't call or bet?
  * winner implementation
- * next game logic (reset var / change dealer and blinds...)
+ * chek if username is null
  */

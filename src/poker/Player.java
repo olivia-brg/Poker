@@ -61,6 +61,6 @@ public class Player {
 
     @Override
     public String toString() {
-        return name + " : " + hand + " and has " + tokens + " tokens\n";
+        return name + " - " + tokens + " tokens\n";
     }
 }
