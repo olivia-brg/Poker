@@ -1,10 +1,6 @@
 package poker;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
 
 public class Game {
 
@@ -14,19 +10,21 @@ public class Game {
     private int currentMinBet;
     private int dealerIndex;
     private int totalBetTokens;
+    private int playersInGame;
 
-    public Game(List<Player> players) {
+    public Game(List<Player> players, int numberOfPlayers) {
         this.players = players;
         this.communityCards = new ArrayList<>();
         this.smallBlind = 2;
         this.currentMinBet = this.smallBlind * 2;
+        this.playersInGame = numberOfPlayers;
     }
 
     public void playersTurn(Player player, Scanner inputScanner) {
 
         if (!player.hasFolded()) {
 
-            System.out.println("\n" + player.getName() + " : you have " + player.getTokens() + " tokens.\nDo you want to see your cards ? (Y for yes)");
+            System.out.println("\n\n--------- " + player.getName() + "'s turn ---------\nYou have " + player.getTokens() + " tokens and current bet is at " + currentMinBet + " tokens.\n\nDo you want to see your cards ? (Y for yes / Enter for no)");
             String choice = inputScanner.nextLine();
 
             if (choice.equalsIgnoreCase("Y")) {
@@ -53,14 +51,15 @@ public class Game {
 
                 case 1 -> {
                     player.setFolded(true);
-                    System.out.println("\n" + player.getName() + " fold");
+                    playersInGame--;
+                    System.out.println("\n" + player.getName() + " fold\n\n┌------------------------------------┐");
                 }
                 case 2 -> {
                     int call = (currentMinBet - player.getActualBet());
                     player.betTokens(call);
                     totalBetTokens += call;
 
-                    System.out.println("\n" + player.getName() + " call\nTotal : " + player.getActualBet());
+                    System.out.println("\nYou call\n\n┌------------------------------------┐\n|        " + player.getName() + " is at " + player.getActualBet() + " tokens bet");
                 }
                 case 3 -> {
                     System.out.println("\nYou have " + player.getTokens() + " tokens.\nCurrent bet is at " + currentMinBet + "\nHow much more do you want to bet ?");
@@ -82,13 +81,12 @@ public class Game {
 
                     player.betTokens(bet);
                     totalBetTokens += bet;
-                    if (currentMinBet < player.getActualBet()) {
-                        currentMinBet = player.getActualBet();
-                    }
-                    System.out.println("\n" + player.getName() + " raise by " + addToBet + " tokens\nTotal : " + player.getActualBet());
+                    if (currentMinBet < player.getActualBet()) currentMinBet = player.getActualBet();
+                    
+                    System.out.println("\n You raise by " + addToBet + " tokens\n\n┌------------------------------------┐\n|        " + player.getName() + " is at " + player.getActualBet() + " tokens bet");
                 }
             }
-            System.out.println("\nTotal bet tokens : " + totalBetTokens);
+            System.out.println("|        Total tokens bet : " + totalBetTokens + "       |\n└------------------------------------┘");
         } else {
             System.out.println("\n" + player.getName() + " has folded.");
         }
@@ -110,14 +108,15 @@ public class Game {
     }
 
     public Player getDealer(Integer... nth) {
-        Integer n1 = nth.length > 0 ? nth[0] : 0;
-        return players.get(dealerIndex + n1);
+        Integer n = nth.length > 0 ? nth[0] : 0;
+        return players.get(dealerIndex + n);
     }
 
     public void playRound(Scanner inputScanner) {
         int currentPlayerIndex = (dealerIndex + 3) % players.size();
 
         for (int i = 0; i < players.size(); i++) {
+            if (playersInGame < 2) break;
             Player currentPlayer = players.get(currentPlayerIndex);
             playersTurn(currentPlayer, inputScanner);
 
@@ -146,7 +145,6 @@ public class Game {
             System.out.println("\nEnter username:");
 
             String userName = inputScanner.nextLine();
-            System.out.println("Hello " + userName + " !");
 
             Player player = new Player(userName);
             players.add(player);
@@ -155,66 +153,60 @@ public class Game {
         int gameNumber = 0;
         String playAgain;
 
-        Game game = new Game(players);
+        Game game = new Game(players, numberOfPlayers);
 
         do {
             gameNumber++;
-            
-            System.out.println("\nGame n°" + gameNumber);
-            System.out.println("Dealer : " + game.getDealer().getName());
-            
+
+            System.out.println("\n------------- Game n°" + gameNumber + " -------------\n\n" +
+                                "Dealer : " + game.getDealer().getName());
+
             Deck.CreateDeck();
-            
+
             for (Player player : players) {
                 player.setFolded(false);
                 player.setHand(Deck.Deal(2));
             }
-            
+
             Player smallBlindPlayer = game.getDealer(1);
             Player bigBlindPlayer = game.getDealer(2);
-            
+
             smallBlindPlayer.betTokens(game.smallBlind);
             bigBlindPlayer.betTokens(game.smallBlind * 2);
-            
-            game.totalBetTokens += game.smallBlind * 3;
-            
-            System.out.println(smallBlindPlayer.getName() + " is the small blind (" + game.smallBlind + " tokens)");
-            System.out.println(bigBlindPlayer.getName() + " is the big blind (" + (game.smallBlind * 2) + " tokens)");
-            
-            for (int round = 0; round < 3; round++) {
-                int playersInGame = 0;
 
+            game.totalBetTokens += game.smallBlind * 3;
+
+            System.out.println(smallBlindPlayer.getName() + " is the small blind (" + game.smallBlind + " tokens)");
+            System.out.println(bigBlindPlayer.getName() + " is the big blind (" + (game.smallBlind * 2) + " tokens)\n\n------------------------------------");
+
+            for (int round = 0; round < 3; round++) {
                 boolean newTurn;
                 do {
                     game.playRound(inputScanner);
 
                     LinkedList<Integer> playersActualBet = new LinkedList<>();
-                    LinkedList<Boolean> playersStillPlaying = new LinkedList<>();
                     for (Player player : players) {
-                        playersActualBet.push(player.getActualBet());
-                        playersStillPlaying.push(player.hasFolded());
+                        if (!player.hasFolded()) playersActualBet.push(player.getActualBet());
                     }
 
-                    newTurn = false; 
-                    for (int i = 1; i < numberOfPlayers; i++) {
-                        if (!Objects.equals(playersActualBet.get(0), playersActualBet.get(i))) {
+                    newTurn = false;
+                    for (int i = 1; i < game.playersInGame; i++) {
+                        if (!Objects.equals(playersActualBet.get(0), playersActualBet.get(i)) && game.playersInGame >= 2) {
                             newTurn = true;
                             break;
-                        }
-                        
-                        if (playersStillPlaying.get(i) == true) {
-                            playersInGame++;
                         }
                     }
 
                 } while (newTurn);
 
-                if (round == 0) {
-                    game.setCommunityCards(3); // Flop
-                } else {
-                    game.setCommunityCards(1); // Turn & River
+                if (game.playersInGame >= 2) {
+                    if (round == 0) {
+                        game.setCommunityCards(3); // Flop
+                    } else {
+                        game.setCommunityCards(1); // Turn & River
+                    }
+                    game.getCommunityCards();
                 }
-                game.getCommunityCards();
 
             }
             game.playRound(inputScanner);
