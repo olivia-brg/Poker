@@ -24,7 +24,7 @@ public class Game {
 
         if (!player.hasFolded()) {
 
-            System.out.println("\n\n--------- " + player.getName() + "'s turn ---------\nYou have " + player.getTokens() + " tokens and current bet is at " + currentMinBet + " tokens.\n\nDo you want to see your cards ? (Y for yes / Enter for no)");
+            System.out.println("\n\n--------- " + player.getName() + "'s turn ---------\n\nYou have " + player.getTokens() + " tokens and current bet is at " + currentMinBet + " tokens.\n\nDo you want to see your cards ? (Y for yes / Enter for no)");
             String choice = inputScanner.nextLine();
 
             if (choice.equalsIgnoreCase("Y")) {
@@ -150,12 +150,12 @@ public class Game {
             players.add(player);
         }
 
-        int gameNumber = 0;
         String playAgain;
-
-        Game game = new Game(players, numberOfPlayers);
-
+        int gameNumber = 0;
+        
         do {
+            Game game = new Game(players, numberOfPlayers);
+            
             gameNumber++;
 
             System.out.println("\n------------- Game n°" + gameNumber + " -------------\n\n" +
@@ -166,7 +166,10 @@ public class Game {
             for (Player player : players) {
                 player.setFolded(false);
                 player.setHand(Deck.Deal(2));
+                player.resetActualBet();
             }
+
+            Player winner = null;
 
             Player smallBlindPlayer = game.getDealer(1);
             Player bigBlindPlayer = game.getDealer(2);
@@ -183,7 +186,7 @@ public class Game {
                 boolean newTurn;
                 do {
                     game.playRound(inputScanner);
-
+                    
                     LinkedList<Integer> playersActualBet = new LinkedList<>();
                     for (Player player : players) {
                         if (!player.hasFolded()) playersActualBet.push(player.getActualBet());
@@ -206,10 +209,17 @@ public class Game {
                         game.setCommunityCards(1); // Turn & River
                     }
                     game.getCommunityCards();
+                } else {
+                    for (Player player : players) {
+                        if (!player.hasFolded()) winner = player;
+                    }
                 }
 
             }
             game.playRound(inputScanner);
+
+            winner.earnedTokens(game.totalBetTokens);
+            System.out.println("-_-_-_-_-_- Well played " + winner.getName() + ", you won " + (game.totalBetTokens - winner.getActualBet()) + " tokens, now you have " + winner.getTokens() + " ! -_-_-_-_-_-");
 
             System.out.println("\n\nPlay again ? (Y for yes)");
             playAgain = inputScanner.nextLine();
@@ -224,5 +234,4 @@ public class Game {
  * what happens when you don't have tokens anymore and you can't call or bet?
  * winner implementation
  * next game logic (reset var / change dealer and blinds...)
- * QUIT WHEN THERE'S JUST ONE PLAYER
  */

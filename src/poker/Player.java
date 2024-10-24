@@ -30,8 +30,12 @@ public class Player {
         return tokens;
     }
 
+    public void earnedTokens(int gain) {
+        this.tokens += gain;
+    }
+
     public void betTokens(int bet) {
-        this.tokens = tokens - bet;
+        this.tokens -= bet;
         this.actualBet += bet;
     }
 
