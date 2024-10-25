@@ -11,7 +11,7 @@ public class Deck {
     public static void CreateDeck() {
         deck = new ArrayList<>();
 
-        for (Card.Color color : Card.Color.values()) {
+        for (Card.Symbol color : Card.Symbol.values()) {
             for (Card.Value value : Card.Value.values()) {
                 deck.add(new Card(color, value));
             }

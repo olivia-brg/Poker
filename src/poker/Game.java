@@ -27,11 +27,18 @@ public class Game {
 
         if (!player.hasFolded()) {
 
-            System.out.println("\n\n-------- " + player.getName() + "'s turn --------\n\nYou have " + player.getTokens() + " tokens and current bet is at " + currentMinBet + " tokens.\n\nDo you want to see your cards ? (Y for yes / Enter for no)");
+            System.out.println("\n\n-------- " + player.getName() + "'s turn --------");
+            if (!communityCards.isEmpty()) {
+                getCommunityCards();
+            };
+            System.out.println("\n\nYou have " + player.getTokens() + " tokens and current bet is at " + currentMinBet + " tokens.\n\nDo you want to see your cards ? (Y for yes / Enter for no)");
             String choice = inputScanner.nextLine();
 
             if (choice.equalsIgnoreCase("Y")) {
-                System.out.println("\nYour cards are : " + player.getHand());
+                System.out.println("\nYour cards are : ");
+                for (Card card : player.getHand()) {
+                    System.out.println("" + card + Color.BLACK + Color.GREEN_BACKGROUND);
+                }
             }
 
             System.out.println("\nWhat do you want to do ? \n1 : Fold\n2 : Call\n3 : Raise");
@@ -55,14 +62,14 @@ public class Game {
                 case 1 -> {
                     player.setFolded(true);
                     playersInGame.remove(player);
-                    System.out.println("\n" + player.getName() + " fold\n\n┌------------------------------------┐");
+                    System.out.println("\n" + player.getName() + " fold\n\n" + Color.RED + Color.GREEN_BACKGROUND + "┌------------------------------------┐");
                 }
                 case 2 -> {
                     int call = (currentMinBet - player.getActualBet());
                     player.betTokens(call);
                     totalBetTokens += call;
 
-                    System.out.println("\nYou call\n\n┌------------------------------------┐\n|        " + player.getName() + " is at " + player.getActualBet() + " tokens bet");
+                    System.out.println("\nYou call\n\n"+ Color.RED + Color.GREEN_BACKGROUND + "┌------------------------------------┐\n|        " + player.getName() + " is at " + player.getActualBet() + " tokens bet");
                 }
                 case 3 -> {
                     System.out.println("\nYou have " + player.getTokens() + " tokens.\nCurrent bet is at " + currentMinBet + "\nHow much more do you want to bet ?");
@@ -88,10 +95,10 @@ public class Game {
                         currentMinBet = player.getActualBet();
                     }
 
-                    System.out.println("\n You raise by " + addToBet + " tokens\n\n┌------------------------------------┐\n|        " + player.getName() + " is at " + player.getActualBet() + " tokens bet");
+                    System.out.println("\n You raise by " + addToBet + " tokens\n\n" + Color.RED + Color.GREEN_BACKGROUND + "┌------------------------------------┐\n|        " + player.getName() + " is at " + player.getActualBet() + " tokens bet");
                 }
             }
-            System.out.println("|        Total tokens bet : " + totalBetTokens + "       |\n└------------------------------------┘");
+            System.out.println("|        Total tokens bet : " + totalBetTokens + "       |\n└------------------------------------┘" + Color.BLACK + Color.GREEN_BACKGROUND);
         } else {
             System.out.println("\n" + player.getName() + " has folded.");
         }
@@ -104,7 +111,7 @@ public class Game {
     public void getCommunityCards() {
         System.out.println("\nCommunity Cards :\n");
         for (Card card : communityCards) {
-            System.out.println(card);
+            System.out.println("" + card + Color.BLACK + Color.GREEN_BACKGROUND);
         }
     }
 
@@ -115,10 +122,11 @@ public class Game {
 
     public void playRound(Scanner inputScanner) {
         LinkedList<Player> playersInTurn = new LinkedList<>(playersInGame);
-        int currentPlayerIndex = (dealerIndex + 3) % playersInTurn.size();
+        int offset = Math.min(3, playersInTurn.size());
+        int currentPlayerIndex = (dealerIndex + offset) % playersInTurn.size();
 
-        for (int i = 1; i < playersInTurn.size(); i++) {
-            if (playersInGame.size() < 2) {
+        for (int i = 0; i < playersInTurn.size(); i++) {
+            if (playersInGame.size() < 2 /*|| playersInTurn.get(currentPlayerIndex).getTokens() < (currentMinBet - playersInTurn.get(currentPlayerIndex).getActualBet())*/) {
                 break;
             }
             Player currentPlayer = playersInTurn.get(currentPlayerIndex);
@@ -129,11 +137,13 @@ public class Game {
     }
 
     public static void main(String[] args) {
+        System.out.print("" + Color.BLACK + Color.GREEN_BACKGROUND);
+
         Scanner inputScanner = new Scanner(System.in);
         LinkedList<Player> playersEntry = new LinkedList<>();
         int numberOfPlayers;
 
-        System.out.println("\u001B[30m\u001B[47m\nHow many player there is ?");
+        System.out.println("\nHow many player there is ?");
         do {
             try {
                 String s = inputScanner.nextLine();
@@ -161,12 +171,13 @@ public class Game {
         int gameNumber = 0;
 
         do {
+            System.out.print("" + Color.BLACK + Color.GREEN_BACKGROUND);
             Game game = new Game(playersEntry, numberOfPlayers);
 
             game.dealerIndex += gameNumber;
             gameNumber++;
 
-            System.out.println("\u001B[30m\u001B[47m\n------------------------------------\n------------- Game n°" + gameNumber + " -------------\n------------------------------------\n\n"
+            System.out.println("" + Color.BLACK + Color.WHITE_BACKGROUND + "\n------------------------------------\n------------- Game n°" + gameNumber + " -------------\n------------------------------------\n\n"
                     + "Dealer : " + game.getDealer().getName());
 
             Deck.CreateDeck();
@@ -188,7 +199,7 @@ public class Game {
             game.totalBetTokens += game.smallBlind * 3;
 
             System.out.println(smallBlindPlayer.getName() + " is the small blind (" + game.smallBlind + " tokens)");
-            System.out.println(bigBlindPlayer.getName() + " is the big blind (" + (game.smallBlind * 2) + " tokens)\n\n------------------------------------");
+            System.out.println(bigBlindPlayer.getName() + " is the big blind (" + (game.smallBlind * 2) + " tokens)\n\n------------------------------------" +  Color.BLACK + Color.GREEN_BACKGROUND);
 
             for (int round = 0; round < 3; round++) {
                 boolean newTurn;
@@ -198,7 +209,6 @@ public class Game {
                     LinkedList<Integer> playersActualBet = new LinkedList<>();
                     for (Player player : game.playersInGame) {
                         playersActualBet.add(player.getActualBet());
-
                     }
 
                     newTurn = false;
@@ -217,22 +227,40 @@ public class Game {
                     } else {
                         game.setCommunityCards(1); // Turn & River
                     }
-                    game.getCommunityCards();
                 } else {
                     for (Player player : game.playersInGame) {
                         winner = player;
                     }
                 }
-
             }
 
             game.playRound(inputScanner);
 
             if (game.playersInGame.size() > 1) {
+                System.out.println("Select the winner by they're number :");
+
                 for (int i = 0; i < game.playersInGame.size(); i++) {
-                    playersEntry.get(i).getHand();
-                    System.out.println("Player " + (i + 1) + " - " + game.playersInGame.get(i).getName() + " : " + game.playersInGame.get(i).getHand());
+
+                    System.out.println("\nPlayer " + (i + 1) + " - " + game.playersInGame.get(i).getName() + " : ");
+                    for (Card card : playersEntry.get(i).getHand()) {
+                        System.out.println(" - " + card + Color.BLACK + Color.GREEN_BACKGROUND);
+                    }
                 }
+
+                int winnerChoice = 0;
+                while (winnerChoice < 1 || winnerChoice > game.playersInGame.size()) {
+                    do {
+                        try {
+                            String s = inputScanner.nextLine();
+                            winnerChoice = Integer.parseInt(s);
+                            break;
+                        } catch (NumberFormatException e) {
+                            System.out.println("\nCounldn't parse input, please select a number.");
+                        }
+
+                    } while (true);
+                }
+                winner = game.playersInGame.get(winnerChoice - 1);
             }
 
             winner.earnedTokens(game.totalBetTokens);
@@ -259,6 +287,7 @@ public class Game {
 /*
  * TODO
  * what happens when you don't have tokens anymore and you can't call or bet?
- * winner implementation
- * chek if username is null
+ * tie winner implementation
+ * check if username is null
+ * 4 raise round max
  */
