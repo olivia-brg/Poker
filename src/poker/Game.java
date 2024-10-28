@@ -239,10 +239,12 @@ public class Game {
             if (game.playersInGame.size() > 1) {
                 System.out.println("Select the winner by they're number :");
 
+                game.getCommunityCards();
+
                 for (int i = 0; i < game.playersInGame.size(); i++) {
 
                     System.out.println("\nPlayer " + (i + 1) + " - " + game.playersInGame.get(i).getName() + " : ");
-                    for (Card card : playersEntry.get(i).getHand()) {
+                    for (Card card : game.playersInGame.get(i).getHand()) {
                         System.out.println(" - " + card + Color.BLACK + Color.GREEN_BACKGROUND);
                     }
                 }
